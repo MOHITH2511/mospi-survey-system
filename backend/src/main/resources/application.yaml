@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mospi_db
+    username: postgres
+    password: Mohith@005
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
