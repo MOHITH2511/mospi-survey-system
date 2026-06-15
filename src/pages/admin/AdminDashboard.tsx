@@ -7,14 +7,13 @@ import {
   Plus,
   Activity,
   Sparkles,
-  Map as MapIcon,
   Search,
   Filter,
   Database,
   Send,
   Settings
 } from "lucide-react";
-import indiaMap from "@/assets/india-outline.svg";
+import { IndiaMap } from "@/components/IndiaMap";
 
 // Note: Reusing the simple StatCard approach directly to match the 6 columns
 function DashboardStat({ label, value, icon: Icon, trend }: { label: string; value: string; icon: React.ElementType; trend: string }) {
@@ -146,54 +145,36 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      {/* Mid Section: Map & AI Insights */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* State-wise Map Placeholder */}
-        <div className="lg:col-span-2 rounded-xl border border-gray-200 bg-white p-5 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-base font-bold text-gray-900">State-wise Participation</h3>
-              <p className="text-xs text-gray-500">Live response density across national zones.</p>
-            </div>
-            <button className="text-xs font-semibold text-[#1e3a8a] border border-[#1e3a8a]/20 px-3 py-1.5 rounded bg-blue-50">
-              View Detailed Map
-            </button>
+        {/* Mid Section: Map & AI Insights */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 rounded-xl border border-gray-200 bg-white p-5 shadow-sm flex flex-col">
+            <h3 className="text-base font-bold text-gray-900">State-wise Participation</h3>
+            <p className="text-xs text-gray-500">Live response density across national zones.</p>
+            <IndiaMap />
           </div>
-          <div className="flex-1 bg-slate-50 border border-gray-200 rounded-lg flex items-center justify-center relative p-6 min-h-[300px]">
-            <img src={indiaMap} className="absolute inset-0 w-full h-full object-contain opacity-[0.15] pointer-events-none" alt="India Map" />
-            <div className="z-10 flex flex-col items-center">
-              <MapIcon className="h-10 w-10 text-[#1e3a8a] mb-2" />
-              <p className="text-sm font-bold text-gray-700">Live Coverage Map</p>
-              <p className="text-xs text-gray-500 mt-1 max-w-xs text-center">
-                Geospatial visualization of survey deployment
-              </p>
+
+          {/* AI Summary Card */}
+          <div className="rounded-xl border border-[#1e3a8a]/20 bg-gradient-to-b from-[#f8fafc] to-blue-50/50 p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="h-5 w-5 text-[#2563eb]" />
+              <h3 className="text-base font-bold text-[#020b18]">AI Findings</h3>
+            </div>
+            <div className="space-y-4">
+              <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-emerald-500">
+                <p className="text-sm text-gray-800 font-medium">Response rates in the Southern Region are 18% higher than the national average.</p>
+              </div>
+              <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-amber-500">
+                <p className="text-sm text-gray-800 font-medium">Health Survey (S-2026-042) participation is surprisingly low in Tier-1 urban districts.</p>
+              </div>
+              <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-[#2563eb]">
+                <p className="text-sm text-gray-800 font-medium">Agricultural households reported a 12% increase in machinery usage across Punjab.</p>
+              </div>
+              <button className="w-full mt-2 text-sm font-bold text-[#1e3a8a] py-2 border border-[#1e3a8a]/20 rounded bg-white hover:bg-blue-50 transition-colors">
+                View All Insights →
+              </button>
             </div>
           </div>
         </div>
-
-        {/* AI Summary Card */}
-        <div className="rounded-xl border border-[#1e3a8a]/20 bg-gradient-to-b from-[#f8fafc] to-blue-50/50 p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="h-5 w-5 text-[#2563eb]" />
-            <h3 className="text-base font-bold text-[#020b18]">AI Findings</h3>
-          </div>
-          <div className="space-y-4">
-            <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-emerald-500">
-              <p className="text-sm text-gray-800 font-medium">Response rates in the Southern Region are 18% higher than the national average.</p>
-            </div>
-            <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-amber-500">
-              <p className="text-sm text-gray-800 font-medium">Health Survey (S-2026-042) participation is surprisingly low in Tier-1 urban districts.</p>
-            </div>
-            <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-[#2563eb]">
-              <p className="text-sm text-gray-800 font-medium">Agricultural households reported a 12% increase in machinery usage across Punjab.</p>
-            </div>
-            <button className="w-full mt-2 text-sm font-bold text-[#1e3a8a] py-2 border border-[#1e3a8a]/20 rounded bg-white hover:bg-blue-50 transition-colors">
-              View All Insights →
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Survey Status Table */}
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 border-b border-gray-100 gap-4">

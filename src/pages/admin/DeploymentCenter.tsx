@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   ChevronRight,
   ChevronDown,
-  Map,
   Users,
   Search,
   CheckSquare,
@@ -13,16 +12,14 @@ import {
   FileText
 } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
-import indiaMap from "@/assets/india-outline.svg";
+import { IndiaMap } from "@/components/IndiaMap";
 
 export default function DeploymentCenter() {
   const [selectedSurvey, setSelectedSurvey] = useState("");
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
-  const [selectedZone, setSelectedZone] = useState<string | null>(null);
 
   // Toggle state
   const toggleState = (stateName: string) => {
-    setSelectedZone(null); // Clear zone selection if manually picking states
     if (selectedStates.includes(stateName)) {
       setSelectedStates(selectedStates.filter(s => s !== stateName));
     } else {
@@ -30,14 +27,35 @@ export default function DeploymentCenter() {
     }
   };
 
-  // Toggle Zone
-  const selectZone = (zone: string, statesInZone: string[]) => {
-    setSelectedZone(zone);
-    setSelectedStates(statesInZone);
+  // Toggle Zone (multi-select)
+  const selectZone = (_zone: string, statesInZone: string[]) => {
+    // Check if all states in this zone are already selected
+    const allSelected = statesInZone.every(s => selectedStates.includes(s));
+    
+    if (allSelected) {
+      // Deselect the entire zone
+      setSelectedStates(selectedStates.filter(s => !statesInZone.includes(s)));
+    } else {
+      // Add all states from this zone that aren't already selected
+      const newStates = [...selectedStates];
+      statesInZone.forEach(s => {
+        if (!newStates.includes(s)) newStates.push(s);
+      });
+      setSelectedStates(newStates);
+    }
   };
 
-  const southZone = ["Tamil Nadu", "Karnataka", "Kerala", "Andhra Pradesh", "Telangana"];
-  const northZone = ["Punjab", "Haryana", "Himachal Pradesh", "Uttar Pradesh", "Uttarakhand"];
+  // Define zones and states
+  const zones = {
+    North: ["Jammu and Kashmir", "Ladakh", "Punjab", "Himachal Pradesh", "Haryana", "Chandigarh", "Delhi", "Uttaranchal", "Uttar Pradesh"],
+    South: ["Andhra Pradesh", "Karnataka", "Kerala", "Tamil Nadu", "Telangana", "Puducherry", "Lakshadweep", "Andaman and Nicobar"],
+    East: ["Bihar", "Jharkhand", "Orissa", "West Bengal"],
+    West: ["Rajasthan", "Gujarat", "Maharashtra", "Goa", "Dadra and Nagar Haveli", "Daman and Diu"],
+    Central: ["Madhya Pradesh", "Chhattisgarh"],
+    NorthEast: ["Arunachal Pradesh", "Assam", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Sikkim", "Tripura"]
+  };
+
+  const allStates = Object.values(zones).flat();
 
   return (
     <div className="space-y-6">
@@ -100,29 +118,37 @@ export default function DeploymentCenter() {
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Quick Select</label>
               <div className="grid grid-cols-2 gap-2">
                 <button 
-                  onClick={() => selectZone("National", [...southZone, ...northZone])}
-                  className={`py-2 text-sm font-semibold rounded-lg border ${selectedZone === "National" ? 'bg-blue-50 border-[#1e3a8a] text-[#1e3a8a]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                  onClick={() => selectZone("National", allStates)}
+                  className={`py-2 text-sm font-semibold rounded-lg border ${allStates.every(s => selectedStates.includes(s)) ? 'bg-blue-50 border-[#1e3a8a] text-[#1e3a8a]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                 >
                   National Rollout
                 </button>
                 <button 
-                  onClick={() => selectZone("South", southZone)}
-                  className={`py-2 text-sm font-semibold rounded-lg border ${selectedZone === "South" ? 'bg-blue-50 border-[#1e3a8a] text-[#1e3a8a]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                  onClick={() => selectZone("South", zones.South)}
+                  className={`py-2 text-sm font-semibold rounded-lg border ${zones.South.every(s => selectedStates.includes(s)) ? 'bg-blue-50 border-[#1e3a8a] text-[#1e3a8a]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                 >
                   Entire South Zone
                 </button>
                 <button 
-                  onClick={() => selectZone("North", northZone)}
-                  className={`py-2 text-sm font-semibold rounded-lg border ${selectedZone === "North" ? 'bg-blue-50 border-[#1e3a8a] text-[#1e3a8a]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                  onClick={() => selectZone("North", zones.North)}
+                  className={`py-2 text-sm font-semibold rounded-lg border ${zones.North.every(s => selectedStates.includes(s)) ? 'bg-blue-50 border-[#1e3a8a] text-[#1e3a8a]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                 >
                   Entire North Zone
+                </button>
+                <button 
+                  onClick={() => {
+                    setSelectedStates([]);
+                  }}
+                  className={`py-2 text-sm font-semibold rounded-lg border border-red-200 text-red-600 hover:bg-red-50`}
+                >
+                  Clear Selection
                 </button>
               </div>
             </div>
 
             {/* Visual Hierarchy Tree */}
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block flex items-center justify-between">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center justify-between">
                 Geographic Tree Selection
                 <Search className="h-3.5 w-3.5 text-gray-400" />
               </label>
@@ -130,66 +156,54 @@ export default function DeploymentCenter() {
                 
                 {/* Tree Item: Country */}
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-2 sticky top-0 bg-slate-50/90 py-1 z-10 backdrop-blur-sm">
                     <ChevronDown className="h-4 w-4 text-gray-500" />
                     <Globe className="h-4 w-4 text-[#1e3a8a]" />
                     <span className="font-bold text-sm text-gray-900">India</span>
                   </div>
                   
-                  {/* Tree Children: States */}
-                  <div className="pl-6 space-y-2 border-l border-gray-200 ml-2">
-                    {/* State 1 */}
-                    <div>
-                      <div className="flex items-center gap-2 cursor-pointer group" onClick={() => toggleState("Karnataka")}>
-                        <ChevronDown className="h-4 w-4 text-gray-400" />
-                        {selectedStates.includes("Karnataka") ? (
-                          <CheckSquare className="h-4 w-4 text-[#1e3a8a]" />
-                        ) : (
-                          <Square className="h-4 w-4 text-gray-300 group-hover:border-gray-400" />
-                        )}
-                        <span className="font-semibold text-sm text-gray-700">Karnataka</span>
-                      </div>
-                      
-                      {/* Sub-children: Districts (Visible if state selected) */}
-                      {selectedStates.includes("Karnataka") && (
-                        <div className="pl-6 mt-2 space-y-2 border-l border-gray-200 ml-2">
-                          <div className="flex items-center gap-2">
-                            <CheckSquare className="h-4 w-4 text-[#10b981]" />
-                            <span className="text-xs text-gray-600">Bengaluru Urban</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <CheckSquare className="h-4 w-4 text-[#10b981]" />
-                            <span className="text-xs text-gray-600">Mysuru</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <CheckSquare className="h-4 w-4 text-[#10b981]" />
-                            <span className="text-xs text-gray-600">Belagavi</span>
-                          </div>
+                  {/* Tree Children: Dynamically Rendered Zones and States */}
+                  <div className="pl-6 space-y-3 border-l border-gray-200 ml-2">
+                    {Object.entries(zones).map(([zoneName, states]) => (
+                      <div key={zoneName}>
+                        <div 
+                          className="flex items-center gap-2 mb-1.5 cursor-pointer group"
+                          onClick={() => selectZone(zoneName, states)}
+                        >
+                          <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+                          {states.every(s => selectedStates.includes(s)) ? (
+                            <CheckSquare className="h-4 w-4 text-[#1e3a8a]" />
+                          ) : states.some(s => selectedStates.includes(s)) ? (
+                            <div className="h-4 w-4 bg-[#1e3a8a] rounded-[3px] flex items-center justify-center">
+                              <div className="h-0.5 w-2.5 bg-white rounded-full"></div>
+                            </div>
+                          ) : (
+                            <Square className="h-4 w-4 text-gray-300 group-hover:border-gray-400 transition-colors" />
+                          )}
+                          <span className="font-bold text-xs text-gray-600 uppercase tracking-wider">{zoneName} Zone</span>
                         </div>
-                      )}
-                    </div>
-
-                    {/* State 2 */}
-                    <div className="flex items-center gap-2 cursor-pointer group" onClick={() => toggleState("Tamil Nadu")}>
-                      <ChevronRight className="h-4 w-4 text-gray-400" />
-                      {selectedStates.includes("Tamil Nadu") ? (
-                        <CheckSquare className="h-4 w-4 text-[#1e3a8a]" />
-                      ) : (
-                        <Square className="h-4 w-4 text-gray-300" />
-                      )}
-                      <span className="font-semibold text-sm text-gray-700">Tamil Nadu</span>
-                    </div>
-
-                    {/* State 3 */}
-                    <div className="flex items-center gap-2 cursor-pointer group" onClick={() => toggleState("Kerala")}>
-                      <ChevronRight className="h-4 w-4 text-gray-400" />
-                      {selectedStates.includes("Kerala") ? (
-                        <CheckSquare className="h-4 w-4 text-[#1e3a8a]" />
-                      ) : (
-                        <Square className="h-4 w-4 text-gray-300" />
-                      )}
-                      <span className="font-semibold text-sm text-gray-700">Kerala</span>
-                    </div>
+                        
+                        <div className="pl-6 space-y-1.5 border-l border-gray-100 ml-2 py-1">
+                          {states.map(stateName => (
+                            <div 
+                              key={stateName} 
+                              className="flex items-center gap-2 cursor-pointer group hover:bg-blue-50/50 rounded px-1 -ml-1 transition-colors" 
+                              onClick={() => toggleState(stateName)}
+                            >
+                              <ChevronRight className="h-3 w-3 text-gray-300" />
+                              {selectedStates.includes(stateName) ? (
+                                <CheckSquare className="h-4 w-4 text-[#1e3a8a]" />
+                              ) : (
+                                <Square className="h-4 w-4 text-gray-300 group-hover:border-gray-400 transition-colors" />
+                              )}
+                              <span className={`text-sm ${selectedStates.includes(stateName) ? 'font-bold text-[#1e3a8a]' : 'font-medium text-gray-700'}`}>
+                                {stateName}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -247,21 +261,12 @@ export default function DeploymentCenter() {
                 <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500"></span> Active Data Collection</span>
               </div>
             </div>
-            <div className="flex-1 bg-slate-50 border border-gray-200 rounded-lg flex flex-col items-center justify-center relative overflow-hidden">
-              <div 
-                className="absolute inset-0 opacity-15"
-                style={{
-                  backgroundImage: `url(${indiaMap})`,
-                  backgroundSize: 'contain',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat'
-                }}
+            <div className="flex-1 bg-slate-50 border border-gray-200 rounded-lg flex flex-col items-center justify-center relative overflow-hidden min-h-[400px]">
+              <IndiaMap 
+                mode="selection" 
+                selectedStates={selectedStates} 
+                onStateClick={toggleState} 
               />
-              <Map className="h-12 w-12 text-[#1e3a8a]/40 mb-3 z-10" />
-              <p className="text-sm font-bold text-gray-600 z-10">Interactive SVG India Map</p>
-              <p className="text-xs text-gray-500 z-10 text-center max-w-sm mt-1">
-                Visualizing coverage for {selectedStates.length > 0 ? selectedStates.join(", ") : "no regions selected yet"}. State boundaries will be filled with status colors.
-              </p>
             </div>
           </div>
 
