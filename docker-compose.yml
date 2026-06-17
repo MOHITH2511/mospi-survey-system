@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:16
+    container_name: mospi_postgres
+    environment:
+      POSTGRES_DB: mospi_survey
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - mospi_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  mospi_pgdata:
