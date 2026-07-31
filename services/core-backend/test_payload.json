@@ -1,0 +1,36 @@
+{
+  "id": "44ec81f4-3b40-4a92-b915-49a8c3e60cec",
+  "title": "Consumer Expenditure Survey",
+  "surveyType": "Consumer Expenditure Survey",
+  "sections": [
+    {
+      "id": "sec-d15ee6f9-69d0-460f-af6a-689ac8b72005",
+      "title": "Section 9.2: Expenditure on other household consumables during the last 30 days",
+      "isCollapsed": false,
+      "questions": [
+        {
+          "id": "a674c7db-ad03-4871-ae7b-50770837ff5b",
+          "type": "short_text",
+          "label": "What is the value of other household consumables procured by the household during last 30days?",
+          "helpText": "Retrieved from standard library",
+          "metadata": {
+            "questionCode": "Q_DB_1",
+            "variableName": "var_db_1",
+            "dataType": "text",
+            "classificationMapping": "None",
+            "referenceStandard": "None"
+          },
+          "validation": {
+            "required": true,
+            "min": "",
+            "max": "",
+            "regex": "",
+            "custom": ""
+          },
+          "skipLogic": [],
+          "tag": "Retrieved Standard"
+        }
+      ]
+    }
+  ]
+}
