@@ -185,7 +185,7 @@ Currently under active development by:
 ---
 
 ## 📄 License
-This project was developed for the **MOSPI Survey Innovation Hackathon - STATATHON 2025**. All rights reserved by the respective team members.
+This project was developed for the **MOSPI Survey Innovation Hackathon - STATATHON 2025 - 26**. All rights reserved by the respective team members.
 
 ---
 
