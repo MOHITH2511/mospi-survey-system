@@ -37,6 +37,7 @@ import {
   ShieldCheck,
   UserCog,
   ArrowLeft,
+  GraduationCap,
 } from "lucide-react";
 
 /* ── Navigation config per role ── */

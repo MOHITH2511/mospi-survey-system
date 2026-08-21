@@ -38,3 +38,6 @@ __pycache__/
 # Build output
 dist/
 build/
+
+# Excluded projects
+datavalidation/

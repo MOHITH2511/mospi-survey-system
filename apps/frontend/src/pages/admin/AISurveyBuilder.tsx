@@ -96,14 +96,39 @@ export interface Section {
 // --- Initial Data ---
 const initialSections: Section[] = [];
 
+const formatSectionTitle = (title: string): string => {
+  let clean = title.trim();
+  // Remove messy instructions in brackets/parentheses like "(To be canvassed only...)"
+  clean = clean.replace(/\([^)]+\)/g, "").trim();
+  clean = clean.replace(/\[[^\]]+\]/g, "").trim();
+  
+  // Format "SECTION [1]" -> "Section 1"
+  if (/^SECTION\s*$/i.test(clean)) {
+    return "Section 1: General Information";
+  }
+
+  // Capitalize properly
+  clean = clean.replace(/^section\s*(\d+)\s*([a-z]?)\s*[:\-\.]?/i, (match, num, letter) => {
+    return `Section ${num}${letter ? letter.toUpperCase() : ''}: `;
+  });
+
+  return clean || "General Section";
+};
+
 const formatQuestionText = (text: string, category: string): string => {
   let clean = text.trim();
   
-  // Remove leading symbols or question numbers (e.g. "Q11.1 ", "Q 6.7 ", "1.12. ")
-  clean = clean.replace(/^(Q\s*\d+(\.\d+)*[:\-\s]*|\d+(\.\d+)*[:\-\s]*)/i, "");
+  // Remove leading symbols, dots, or question numbers (e.g. "Q11.1 ", "Q 6.7 ", "1.12. ", ". ")
+  clean = clean.replace(/^(Q\s*\d+(\.\d+)*[:\-\s]*|\d+(\.\d+)*[:\-\s]*|[\.\-\:\s]+)/i, "");
   
   // Clean multiple spaces and trim
   clean = clean.replace(/\s+/g, " ").trim();
+
+  // Handle specific raw database string anomalies
+  clean = clean.replace(/:\s*To be ascertained in the field\./ig, "");
+  clean = clean.replace(/To be ascertained in the field.*/ig, "");
+  clean = clean.replace(/:\s*2\s*0\s*2\s*3/ig, "2023");
+  clean = clean.replace(/o\s+rural\s+o\s+urban/ig, "Rural or Urban");
 
   if (!clean) return "New Question?";
 
@@ -120,13 +145,10 @@ const formatQuestionText = (text: string, category: string): string => {
   if (lower.startsWith("mobile number") || lower.startsWith("land line number") || lower.startsWith("phone number")) {
     return `What is the ${lower}?`;
   }
-  if (lower.includes("expenditure on") || lower.includes("expenditure for")) {
-    return `${clean.charAt(0).toUpperCase() + clean.slice(1)}?`;
-  }
-
-  // If it's a short topic in housing/expenditure/consumption/etc.
+  
+  // If it's a very short topic
   const words = clean.split(" ");
-  if (words.length <= 4) {
+  if (words.length <= 4 && !lower.includes("sector") && !lower.includes("code")) {
     const catLower = (category || "").toLowerCase();
     if (catLower.includes("house") || catLower.includes("consumption") || catLower.includes("income") || catLower.includes("expenditure") || catLower.includes("transport")) {
       return `What is the estimated monthly expenditure on ${lower}?`;
@@ -137,10 +159,11 @@ const formatQuestionText = (text: string, category: string): string => {
   // Capitalize first letter and append question mark if not present
   if (!clean.endsWith("?") && !clean.endsWith(".")) {
     const firstWord = clean.split(" ")[0].toLowerCase();
-    if (["whether", "is", "does", "do", "are", "have", "can", "if"].includes(firstWord)) {
+    if (["whether", "is", "does", "do", "are", "have", "can", "if", "what", "which", "how", "who"].includes(firstWord)) {
       return `${clean.charAt(0).toUpperCase() + clean.slice(1)}?`;
     }
-    return `${clean.charAt(0).toUpperCase() + clean.slice(1)}?`;
+    // Convert statements to polite requests or questions where appropriate
+    return `${clean.charAt(0).toUpperCase() + clean.slice(1)}.`;
   }
   
   return clean.charAt(0).toUpperCase() + clean.slice(1);
@@ -720,9 +743,12 @@ export default function AISurveyBuilder() {
     else if (promptLower.includes("industry") || promptLower.includes("manufacturing")) generatedTitle = "National Industrial Growth Survey";
     else if (promptLower.includes("household")) generatedTitle = "Household Socio-Economic Survey";
     else {
-      const words = aiPrompt.split(/\s+/).filter(w => w.length > 2).slice(0, 4);
+      const excludedWords = ["i", "am", "creating", "a", "survey", "to", "understand", "please", "suggest", "questions", "about", "the", "for", "in", "need"];
+      const words = aiPrompt.split(/[\s,]+/).filter(w => w.length > 2 && !excludedWords.includes(w.toLowerCase())).slice(0, 5);
       if (words.length > 0) {
         generatedTitle = words.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") + " Survey";
+      } else {
+        generatedTitle = "Custom AI Survey";
       }
     }
     setSurveyTitle(generatedTitle);
@@ -738,6 +764,7 @@ export default function AISurveyBuilder() {
     else if (promptLower.includes("education")) detectedCategory = "Education Survey";
     else if (promptLower.includes("tourism")) detectedCategory = "Tourism Survey";
     else if (promptLower.includes("industry")) detectedCategory = "Industry Survey";
+    else if (promptLower.includes("digital") || promptLower.includes("internet") || promptLower.includes("smartphone") || promptLower.includes("mobile")) detectedCategory = "Digital Access Survey";
     setSurveyType(detectedCategory);
 
     try {
@@ -782,7 +809,7 @@ export default function AISurveyBuilder() {
       const sectionKeys = Object.keys(data.grouped_by_section || {});
       if (sectionKeys.length > 0) {
         sectionKeys.forEach((secTitle) => {
-          const displayTitle = secTitle === "Uncategorized" ? "General Assessment" : secTitle;
+          const displayTitle = secTitle === "Uncategorized" ? "General Assessment" : formatSectionTitle(secTitle);
           const apiQuestions = data.grouped_by_section[secTitle] || [];
           const questionsList: Question[] = apiQuestions.map((qItem: any, index: number) => {
             const qId = qItem.question_id || `q-${crypto.randomUUID()}-${index}`;
@@ -1101,7 +1128,7 @@ export default function AISurveyBuilder() {
           <div className="p-4 border-b border-gray-100 bg-slate-50/50">
             <button 
               onClick={() => setShowAIModal(true)}
-              className="w-full mb-4 bg-[#1e3a8a] text-white py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#1e3a8a]/90 shadow-sm"
+              className="w-full mb-4 bg-gradient-to-r from-[#1e3a8a] to-blue-600 text-white py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:from-[#1e3a8a] hover:to-blue-700 shadow-sm"
             >
               <Sparkles className="h-4 w-4" /> Generate with AI
             </button>
@@ -1169,7 +1196,7 @@ export default function AISurveyBuilder() {
                     </button>
                     <button 
                       onClick={() => setShowAIModal(true)} 
-                      className="flex-1 px-5 py-2.5 bg-[#1e3a8a] text-white font-bold text-sm rounded-lg hover:bg-[#1e3a8a]/90 flex items-center justify-center gap-2 shadow-sm"
+                      className="flex-1 px-5 py-2.5 bg-gradient-to-r from-[#1e3a8a] to-blue-600 text-white font-bold text-sm rounded-lg hover:from-[#1e3a8a] hover:to-blue-700 flex items-center justify-center gap-2 shadow-sm"
                     >
                       <Sparkles className="h-4 w-4" /> Generate with AI
                     </button>
@@ -1235,7 +1262,7 @@ export default function AISurveyBuilder() {
                                 {q.tag && (
                                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm ${
                                     q.tag === 'AI Suggested' 
-                                      ? 'bg-[#1e3a8a] text-white' 
+                                      ? 'bg-gradient-to-r from-[#1e3a8a] to-blue-600 text-white shadow-sm border-none' 
                                       : 'bg-slate-100 text-gray-700 border border-gray-200'
                                   }`}>
                                     {q.tag === 'AI Suggested' ? <Sparkles className="h-3 w-3" /> : <Archive className="h-3 w-3 text-gray-400" />}
@@ -1294,7 +1321,7 @@ export default function AISurveyBuilder() {
         {/* RIGHT PANEL: Properties Editor */}
         <div className="w-80 bg-white border-l border-gray-200 overflow-y-auto shrink-0 shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)]">
           {selectedQuestion ? (
-            <div className="p-5 space-y-6">
+            <div className="p-5 pb-28 space-y-6">
               <div>
                 <h2 className="text-base font-bold text-[#020b18] mb-1">Question Properties</h2>
                 <p className="text-xs text-gray-500 uppercase tracking-wider">{selectedQuestion.type.replace('_', ' ')}</p>
@@ -1935,7 +1962,7 @@ export default function AISurveyBuilder() {
                 <button 
                   onClick={handleAIGenerate}
                   disabled={isGenerating || isExtracting || (!aiPrompt.trim() && !uploadedFileName)}
-                  className="bg-[#1e3a8a] text-white px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-[#1e3a8a]/90 disabled:opacity-50 transition-all"
+                  className="bg-gradient-to-r from-[#1e3a8a] to-blue-600 text-white px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:from-[#1e3a8a] hover:to-blue-700 disabled:opacity-50 transition-all"
                 >
                   {isGenerating ? (
                     <span className="animate-pulse">Analyzing & Generating...</span>

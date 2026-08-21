@@ -9,7 +9,6 @@ import {
   SkipForward,
   CheckCircle2,
   Loader2,
-  Edit3,
   Check
 } from "lucide-react";
 import { useTranslation } from "@/context/TranslationProvider";
@@ -28,7 +27,7 @@ interface VoiceSurveyEngineProps {
   questions: Question[];
   language: string; // "en" | "hi" | etc.
   isOffline: boolean;
-  onComplete: (answers: Record<number, { transcript: string; structured: string }>) => void;
+  onComplete: (data: { answers: Record<number, { transcript: string; structured: string }>; paradata?: any }) => void;
   onBackToConsent: () => void;
 }
 
