@@ -54,38 +54,25 @@ flowchart TD
 
 ---
 
-## 🏛️ Logical Architecture Flow
-
-```mermaid
-flowchart TD
-    A["👤 MoSPI Officials"] --> B["🛠️ SurveyJS & AI Engine<br/>(Drag & Drop / Prompt-based Builder)"]
-    
-    B -- "JSON Logic" --> C["📍 Regional Assignment Engine<br/>(Assign surveys based on geography)"]
-    
-    C --> D["👨‍💼 Supervisor Dashboard<br/>(Monitor & manage survey quality)"]
-    C --> E["📋 Enumerator Dashboard<br/>(Track progress & manual fallback entry)"]
-    C --> F["💬 WhatsApp & SMS Gateway<br/>(Distribute secure survey links to citizens)"]
-    
-    F --> G["📱 Dynamic Chat Interface<br/>(Executes JSON survey logic interactively)"]
-    
-    G -. "Real-Time Translation & Speech" .-> H["🎙️ Bhashini AI Services<br/>(Multilingual Translation & Voice)"]
-    
-    classDef highlight fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    class B,G highlight
-```
-
----
-
 ## 📸 Screenshots
 
-### 1. AI Survey Builder Interface
-*(Add your screenshot here! Example: `![Survey Builder](link/to/image.png)`)*
+### 1. Landing Page
+![Landing Page](https://github.com/user-attachments/assets/aad7ef7b-5b15-417f-a0b2-947ec5e12bae)
 
-### 2. Analytics Dashboard Overview
-*(Add your screenshot here!)*
+### 2. Landing Page
+![Landing Page](https://github.com/user-attachments/assets/e2fe0bfe-bec9-4b30-8246-3885af56cc7b)
 
-### 3. WhatsApp / SMS Deployment
-*(Add your screenshot here!)*
+### 3. Landing Page
+![Landing Page](https://github.com/user-attachments/assets/4b1230af-6ced-4f2c-9afa-ad922c2a0d59)
+
+### 4. Admin/MoSPI Official Dashboard
+![Admin/MoSPI Official Dashboard](https://github.com/user-attachments/assets/55955b78-0674-4422-b575-a895806152e5)
+
+### 5. AI Survey Builder
+![AI Survey Builder](https://github.com/user-attachments/assets/5560d718-8cdd-4e3a-9627-fa2654030d52)
+
+### 6. Deployment Center
+![Deployment Center](https://github.com/user-attachments/assets/2c4b04aa-8b8e-4fbe-ad77-d14cdf0d240d)
 
 ---
 
